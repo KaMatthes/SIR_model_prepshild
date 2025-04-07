@@ -5,6 +5,7 @@ library(htmltools)
 library(deSolve)
 
 col_c  <- c("#FF0066","#7030A0","#1EA7C4" )
+
 lwd_size <- 2
 size_plot <- 18
 size_strip <- 18
