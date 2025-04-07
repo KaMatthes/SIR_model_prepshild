@@ -1,21 +1,9 @@
----
-  title: ""
-runtime: shiny
-output:
-  html_document:
-  pandoc_args: [
-    "+RTS", "-K64m",
-    "-RTS"
-  ]
----
-  
-```{r, echo=FALSE,message=FALSE, warning=FALSE}
-
 library(knitr)
 library(tidyverse)
 library(shiny)
 library(htmltools)
 library(deSolve)
+
 col_c  <- c("#FF0066","#7030A0","#1EA7C4" )
 lwd_size <- 2
 size_plot <- 18
@@ -124,4 +112,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
-```
