@@ -1,3 +1,3 @@
 run app 
 
-https://heighttool.shinyapps.io/SIR_shiny/
+https://heighttool.shinyapps.io/SIR_model_prepshild/
