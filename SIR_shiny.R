@@ -7,25 +7,24 @@ library(deSolve)
 col_c  <- c("#FF0066","#7030A0","#1EA7C4" )
 
 lwd_size <- 2
-size_plot <- 18
-size_strip <- 18
-axis_text_size <- 18
-axis_title_size <- 18
-plot_title_size <- 18
-legend_text_size <- 25
+size_plot <- 15
+size_strip <- 15
+axis_text_size <- 15
+axis_title_size <- 15
+plot_title_size <- 15
+legend_text_size <- 15
   
 ui <- fluidPage(
   fluidRow(
-    column(6, sliderInput(inputId = "repro",label = "Reproductive number", value = 1.5, min = 1, max = 6)),
-    column(6,sliderInput(inputId = "period",label = "Infection period", value = 5, min = 2, max = 7))),
+    column(4, sliderInput(inputId = "repro",label = "Reproductive number", value = 1.5, min = 1, max = 6)),
+    column(4,sliderInput(inputId = "period",label = "Infection period", value = 5, min = 1, max = 14))),
   fluidRow(
-    column(6,sliderInput(inputId = "suscep",label = "Initial susceptible", value = 100000, min = 1000, max = 20000000)),
-    column(6, sliderInput(inputId = "initial",label = "Initial infected", value = 1, min = 1, max = 100))),
+    column(4,sliderInput(inputId = "suscep",label = "Initial susceptible", value = 10000, min = 10000, max = 20000000)),
+    column(4, sliderInput(inputId = "initial",label = "Initial infected", value = 1, min = 1, max = 100))),
    fluidRow(
-     column(6,sliderInput(inputId = "recov",label = "Initial recovered", value = 0, min = 0, max = 10)),
-     column(6,sliderInput(inputId = "timemax",label = "Max days", value = 100, min = 10, max = 150))),
-  dataTableOutput('values'),
-  plotOutput("SIR")
+     column(4,sliderInput(inputId = "recov",label = "Initial recovered", value = 0, min = 0, max = 100)),
+     column(4,sliderInput(inputId = "timemax",label = "Max days", value = 100, min = 10, max = 150))),
+  fluidRow(1,plotOutput("SIR"))
 )
 
 server <- function(input, output, session) {
@@ -42,7 +41,7 @@ server <- function(input, output, session) {
   params <- reactive({
     list(
       R_0 = input$repro,  # reproductive number
-      D = input$period      # Average illness duration in days
+      D = input$period    # Average infection period in days
     )
   })
 
@@ -65,7 +64,7 @@ server <- function(input, output, session) {
     N <- S+I+R
 
     gamma <- 1 / params$D  # Recovery rate
-  beta <- params$R_0 * gamma / N
+    beta <- params$R_0 * gamma / N # transmission rate
     
 
     dS <- -beta * S * I
@@ -80,17 +79,6 @@ server <- function(input, output, session) {
     as.data.frame(ode(y = initial_state(), times = times(), func = sir_model, parms = params()))
   })
 
-  # Output for data table
-  
- # R_rep <- reactive({
- #    R_rep <- params()$beta*(1/params()$D)
- #     return(R_rep)   
- #  })
- #  
-  # output$values <- renderDataTable({
-  #   data.frame(dt1())
-  #   })
-
   # Output for plot
   output$SIR <- renderPlot({
     ggplot(dt1(), aes(x = time)) +
@@ -100,7 +88,7 @@ server <- function(input, output, session) {
       labs(title = "SIR Model for Influenza", x = "Days", y = "Proportion of Population") +
       scale_color_manual("",values = col_c) +
        theme_bw()+
-  theme(
+  theme(aspect.ratio = 0.4,
     strip.text = element_text(size=size_plot),
     axis.text = element_text(size=axis_text_size),
     axis.title  = element_text(size=axis_title_size),
