@@ -93,7 +93,10 @@ ggplot(output_df, aes(x = time)) +
   labs(title = "SEIRD Model with Time-Dependent Vaccination",
     x = "Days",
     y = "Proportion of Population")+
-    scale_color_manual("",values = col_c) +
+  scale_color_manual("",
+                     breaks=c("D","I","S","E","R","V"),
+                     labels=c("Deceased","Infected","Susceptible", "Exposed","Recovered","Vaccinated"),
+                     values = col_c) +
       theme_bw()+
       theme(
         strip.text = element_text(size=size_plot),
@@ -105,19 +108,3 @@ ggplot(output_df, aes(x = time)) +
         panel.grid.minor.x = element_blank(),
         panel.grid.minor.y = element_blank())
 
-ggplot(output_df, aes(x = time)) +
-  geom_line(aes(y = S, color = "Susceptible"), lwd=lwd_size) +
-  geom_line(aes(y = I, color = "Infected") , lwd=lwd_size) +
-  geom_line(aes(y = R, color = "Recovered") , lwd=lwd_size) +
-  labs(title = "SIR Model for Influenza", x = "Days", y = "Proportion of Population") +
-  scale_color_manual("",values = col_c) +
-  theme_bw()+
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
