@@ -80,15 +80,15 @@ params <- c(
 )
 
 # Time vector
-times <- seq(0, 100, by = 1)
+times <- seq(0, 300, by = 1)
 
 # Run the model
-output <- ode(y = initial_state, times = times, func = seird_model, parms = params)
-output_df <- as.data.frame(output) %>%
+out <- ode(y = initial_state, times = times, func = seird_model, parms = params)
+out_df <- as.data.frame(output) %>%
   gather(., comp, prop,S:V)
 
 # Plot the results
-ggplot(output_df, aes(x = time)) +
+ggplot(out_df, aes(x = time)) +
   geom_line(aes(y = prop, color = comp), lwd=lwd_size) +
   labs(title = "SEIRD Model with Time-Dependent Vaccination",
     x = "Days",
