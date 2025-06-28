@@ -4,7 +4,7 @@ library(tidyverse)
 
 options(scipen=999)
 # "#FF0066"
-col_c  <- c("#EB7746FF", "#1A1F2BFF")
+col_c  <- c("#7030A0","#1EA7C4","#F6A1CAFF","#EB7746FF","#B9CA5DFF", "#1A1F2BFF")
 col_sun <- c("#F6A1CAFF", "#1A1F2BFF","#EB7746FF", "#B9CA5DFF","#FBDB82FF", "#9F272EFF", "#D36B8DFF", "#EC9E58FF", "#24719BFF", "#6A1639FF")
 
 lwd_size <- 3
@@ -63,17 +63,66 @@ seirhd_model <- function(time, state, parameters) {
 
 # Time vector
 times <- seq(0, 300, by = 1)
-# Time vector
-times <- seq(0, 300, by = 1)
 
 # Run the model
 out <- ode(y = initial_state, times = times, func = seirhd_model , parms = params)
 out_df <- as.data.frame(out) %>%
-  gather(., comp, prop,S:D) %>%
-  filter(comp %in% c("H", "D"))
+  gather(., comp, prop,S:D) 
 
 # Plot the results
 
+
+ggplot(out_df, aes(x = time)) +
+  geom_line(aes(y = prop, color = comp), lwd=lwd_size) +
+  labs(title = "Influenza - Mild Scenario",
+       x = "Days",
+       y = "Individuals") +
+  scale_color_manual("",
+                     breaks=c("S","E","I","H","R","D"),
+                     labels=c("Susceptible","Exposed","Infected","Hospitalisation","Recovered","Deceased"),
+                     values = col_c) +
+  scale_y_continuous(breaks = seq(0, 100000, by = 10000))+
+  theme_bw()+
+  theme(
+    strip.text = element_text(size=size_plot),
+    axis.text = element_text(size=axis_text_size),
+    axis.title  = element_text(size=axis_title_size),
+    legend.position = "bottom",
+    legend.text=element_text(size=legend_text_size),
+    plot.title = element_text(size=plot_title_size),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank())
+
+ggsave("figures/influenza/mild.png",h=12,w=15)
+
+
+ggplot(out_df, aes(x = time)) +
+  geom_line(aes(y = prop, color = comp), lwd=lwd_size) +
+  labs(title = "Influenza - Severe Scenario",
+    x = "Days",
+    y = "Individuals")+
+  scale_color_manual("",
+                     breaks=c("S","E","I","H","R","D"),
+                     labels=c("Susceptible","Exposed","Infected","Hospitalisation","Recovered","Deceased"),
+                     values = col_c) +
+  scale_y_continuous(breaks = seq(0, 100000, by = 10000))+
+      theme_bw()+
+      theme(
+        axis.text = element_text(size=axis_text_size),
+        axis.title  = element_text(size=axis_title_size),
+        legend.position = "bottom",
+        legend.text=element_text(size=legend_text_size),
+        plot.title = element_text(size=plot_title_size),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank())
+
+ggsave("figures/influenza/severe.png",h=12,w=15)
+
+# Zooom in
+
+out_df <- as.data.frame(out) %>%
+  gather(., comp, prop,S:D) %>%
+  filter(comp %in% c("H", "D"))
 
 ggplot(out_df, aes(x = time)) +
   geom_line(aes(y = prop, color = comp), lwd=lwd_size) +
@@ -102,22 +151,22 @@ ggsave("figures/influenza/mild_zoom.png",h=12,w=15)
 ggplot(out_df, aes(x = time)) +
   geom_line(aes(y = prop, color = comp), lwd=lwd_size) +
   labs(title = "Influenza - Severe Scenario",
-    x = "Days",
-    y = "Individuals")+
+       x = "Days",
+       y = "Individuals")+
   scale_color_manual("",
                      breaks=c("H","D"),
                      labels=c("Hospitalisation","Deceased"),
                      values = col_c) +
   # scale_y_continuous(breaks = seq(0, 100000, by = 10000))+
-      theme_bw()+
-      theme(
-        axis.text = element_text(size=axis_text_size),
-        axis.title  = element_text(size=axis_title_size),
-        legend.position = "bottom",
-        legend.text=element_text(size=legend_text_size),
-        plot.title = element_text(size=plot_title_size),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.minor.y = element_blank())
+  theme_bw()+
+  theme(
+    axis.text = element_text(size=axis_text_size),
+    axis.title  = element_text(size=axis_title_size),
+    legend.position = "bottom",
+    legend.text=element_text(size=legend_text_size),
+    plot.title = element_text(size=plot_title_size),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank())
 
 ggsave("figures/influenza/severe_zoom.png",h=12,w=15)
 
