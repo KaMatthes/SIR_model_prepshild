@@ -33,16 +33,22 @@ colnames(contact_matrix) <- age_groups
 
 # Parameters mild
 
-# R0_vec <- c(young = 1.5, adult = 1.8, elderly = 1.2)
-# CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
-# p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
-# p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
+R0_vec <- c(young = 1.5, adult = 1.8, elderly = 1.2)
+CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
+p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
+p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
 
 # Parameters severe
 R0_vec <- c(young = 2.5, adult = 3, elderly = 3.5)
 CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
 p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
 p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
+
+# for both
+incub_period <- 2
+infection_period <- 5
+Hr <-  10 # times in hospital
+
 
 sigma <- 1 / 2     # Incubation rate (e.g. 2-day incubation)
 gamma <- 1 / 5     # Recovery rate (e.g. 5-day infectious period)
@@ -53,7 +59,7 @@ beta_vec <- R0_vec * gamma / contact_row_sums # age spec
 # Initial state
 init_state <- c(
   S_young = 20000, E_young = 0, I_young = 1, H_young = 0, R_young = 0, D_young = 0,
-  S_adult = 64000, E_adult = 0, I_adult = 0, H_adult = 0, R_adult = 0, D_adult = 0,
+  S_adult = 60000, E_adult = 0, I_adult = 0, H_adult = 0, R_adult = 0, D_adult = 0,
   S_elderly = 20000, E_elderly = 0, I_elderly = 0, H_elderly = 0, R_elderly = 0, D_elderly = 0
 )
 # Total population by age group
