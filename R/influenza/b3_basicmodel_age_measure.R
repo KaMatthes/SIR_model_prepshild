@@ -102,9 +102,9 @@ get_intervention_factor <- function(time) {
   } else if (time >=180 &  time < 210) {
     return(0.5)   # Partial reopening
   # } else if (time >=210 &  time < 240) {
-  #   return(0.7)    # wearing mak
+  #   return(0.7)    # wearing mask
   } else {
-    return(0.7)    # Restrictions lifted
+    return(0.7)     # wearing mask
   }
 }
 
