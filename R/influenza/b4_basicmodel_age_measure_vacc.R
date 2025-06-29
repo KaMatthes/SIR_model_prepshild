@@ -15,6 +15,7 @@ axis_text_size <- 22
 axis_title_size <- 22
 plot_title_size <- 22
 legend_text_size <- 25
+ann_text_size <- 5
 
 library(deSolve)
 library(deSolve)
@@ -56,7 +57,7 @@ beta_vec <- R0_vec * gamma / contact_row_sums
 # Initial state
 init_state <- c(
   S_young = 20000, E_young = 0, I_young = 1, H_young = 0, R_young = 0, D_young = 0,
-  S_adult = 64000, E_adult = 0, I_adult = 0, H_adult = 0, R_adult = 0, D_adult = 0,
+  S_adult = 60000, E_adult = 0, I_adult = 0, H_adult = 0, R_adult = 0, D_adult = 0,
   S_elderly = 20000, E_elderly = 0, I_elderly = 0, H_elderly = 0, R_elderly = 0, D_elderly = 0
 )
 
@@ -173,9 +174,78 @@ dt <- rbind(dt_d, dt_h, dt_i) %>%
     mx = prop/pop *100000
   )
 
+
+df1 <- data.frame(time= 10,
+                  prop = c(4, 0.011, 0.02), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "no NPI") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+
+df2 <- data.frame(time= 60,
+                  prop = c(4, 0.011, 0.02), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "strong lockdown") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+df3 <- data.frame(time= 105,
+                  prop = c(4, 0.011, 0.02), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "partial reopening + elderly vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+df4 <- data.frame(time= 135,
+                  prop = c(4, 0.011, 0.02), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "mask wearing + adults vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+
+df5 <- data.frame(time= 255,
+                  prop = c(4, 0.011, 0.02), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "restrictions lifted + all vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+
 ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +
+  annotate("rect",xmin=0,xmax=30,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+  geom_text(data = df1,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=30,xmax=90,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey5") +
+  geom_text(data = df2,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=90,xmax=120,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey40") +
+  geom_text(data = df3,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=120,xmax=150,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey70") +
+  geom_text(data = df4,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=150,xmax=Inf,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+  geom_text(data = df5,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   labs(title = "Influenza - Mild Scenario - Individuals",
        x = "Days",
        y = "Individuals")+
@@ -198,35 +268,103 @@ ggplot(dt, aes(x = time)) +
 ggsave("figures/influenza/mild_age_meas_vacc.png",h=8,w=20)
 
 
+# ggplot(dt, aes(x = time)) +
+#   geom_line(aes(y = mx, color = age), lwd=lwd_size) +
+#   facet_wrap(~fac, ncol=3, scales = "free_y") +
+#   labs(title = "Influenza - Mild Scenario - Rate",
+#        x = "Days",
+#        y = "Rate per 100'000")+
+#   scale_color_manual("",
+#                      breaks=c("young","adult","elderly"),
+#                      labels=c("0-18","19-64",">=65"),
+#                      values = col_a) +
+#   # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
+#   theme_bw() +
+#   theme(
+#     strip.text = element_text(size=size_plot),
+#     axis.text = element_text(size=axis_text_size),
+#     axis.title  = element_text(size=axis_title_size),
+#     legend.position = "bottom",
+#     legend.text=element_text(size=legend_text_size),
+#     plot.title = element_text(size=plot_title_size),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank())
+# 
+# ggsave("figures/influenza/mild_age_meas_Vacc_mx.png",h=8,w=20)
+# 
+# 
+
+
+df1 <- data.frame(time= 10,
+                  prop = c(250, 9.5, 22.5), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "no NPI") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+
+df2 <- data.frame(time= 72,
+                  prop = c(250, 9.5, 22.5), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "strong lockdown") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+df3 <- data.frame(time= 105,
+                  prop = c(250, 9.5, 22.5), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "partial reopening + elderly vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+df4 <- data.frame(time= 135,
+                  prop = c(250, 9.5, 22.5), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "mask wearing + adults vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
+
+df5 <- data.frame(time= 230,
+                  prop = c(250, 9.5, 22.5), 
+                  fac=c("Infected","Hospitalisation","Deceased"),
+                  text = "restrictions lifted + all vaccinated") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased"))
+  )
+
 ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = mx, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Influenza - Mild Scenario - Rate",
-       x = "Days",
-       y = "Rate per 100'000")+
-  scale_color_manual("",
-                     breaks=c("young","adult","elderly"),
-                     labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/influenza/mild_age_meas_Vacc_mx.png",h=8,w=20)
-
-
-
-ggplot(dt, aes(x = time)) +
+  annotate("rect",xmin=0,xmax=30,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+  geom_text(data = df1,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=30,xmax=90,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey5") +
+  geom_text(data = df2,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=90,xmax=120,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey40") +
+  geom_text(data = df3,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=120,xmax=150,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey70") +
+  geom_text(data = df4,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=150,xmax=Inf,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+  geom_text(data = df5,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
   geom_line(aes(y = prop, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
   labs(title = "Influenza - Severe Scenario - Individuals",
        x = "Days",
        y = "Individuals")+
@@ -249,26 +387,26 @@ ggplot(dt, aes(x = time)) +
 ggsave("figures/influenza/severe_meas_vacc_age.png",h=8,w=20)
 
 
-ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = mx, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Influenza - Severe Scenario - Rate",
-       x = "Days",
-       y = "Rate per 100'000")+
-  scale_color_manual("",
-                     breaks=c("young","adult","elderly"),
-                     labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/influenza/sever_age_meas_vacc_mx.png",h=8,w=20)
+# ggplot(dt, aes(x = time)) +
+#   geom_line(aes(y = mx, color = age), lwd=lwd_size) +
+#   facet_wrap(~fac, ncol=3, scales = "free_y") +
+#   labs(title = "Influenza - Severe Scenario - Rate",
+#        x = "Days",
+#        y = "Rate per 100'000")+
+#   scale_color_manual("",
+#                      breaks=c("young","adult","elderly"),
+#                      labels=c("0-18","19-64",">=65"),
+#                      values = col_a) +
+#   # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
+#   theme_bw() +
+#   theme(
+#     strip.text = element_text(size=size_plot),
+#     axis.text = element_text(size=axis_text_size),
+#     axis.title  = element_text(size=axis_title_size),
+#     legend.position = "bottom",
+#     legend.text=element_text(size=legend_text_size),
+#     plot.title = element_text(size=plot_title_size),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank())
+# 
+# ggsave("figures/influenza/sever_age_meas_vacc_mx.png",h=8,w=20)
