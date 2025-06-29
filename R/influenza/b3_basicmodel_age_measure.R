@@ -224,7 +224,7 @@ df3 <- data.frame(time= 120,
   )
 
 df4 <- data.frame(time= 165,
-                  prop = c(5.9, 0.016, 0.0325), 
+                  prop = c(5, 0.015, 0.032), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "strong lockdown") %>%
   mutate(
@@ -232,7 +232,7 @@ df4 <- data.frame(time= 165,
   )
 
 df5 <- data.frame(time= 195,
-                  prop = c(5.9, 0.016, 0.0325), 
+                  prop = c(5, 0.015, 0.032), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "partial reopening") %>%
   mutate(
@@ -240,7 +240,7 @@ df5 <- data.frame(time= 195,
   )
 
 df6 <- data.frame(time= 255,
-                  prop = c(5.9, 0.016, 0.0325), 
+                  prop = c(5, 0.015, 0.032), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "all open, but still wearing mask") %>%
   mutate(
