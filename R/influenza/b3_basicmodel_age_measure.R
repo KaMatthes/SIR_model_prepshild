@@ -32,16 +32,17 @@ rownames(contact_matrix) <- age_groups
 colnames(contact_matrix) <- age_groups
 
 # Parameters (mild)
-R0_vec <- c(young = 1.5, adult = 1.8, elderly = 1.2)
-CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
-p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
-p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
+# R0_vec <- c(young = 1.8, adult = 1.5, elderly = 1.2)
+# CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
+# p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
+# p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
 
 # Parameters (severe)
-# R0_vec <- c(young = 2.5, adult = 3, elderly = 3.5)
-# CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
-# p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
-# p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
+
+R0_vec <- c(young = 3.5, adult = 3, elderly = 2.5)
+CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
+p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
+p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
 
 sigma <- 1 / 2     # Incubation rate
 gamma <- 1 / 5     # Recovery rate
@@ -198,7 +199,7 @@ dt <- rbind(dt_d, dt_h, dt_i) %>%
   )
 
 df1 <- data.frame(time= 10,
-           prop = c(7, 0.019, 0.0325), 
+           prop = c(5.9, 0.016, 0.0325), 
            fac=c("Infected","Hospitalisation","Deceased"),
            text = "no NPI") %>%
   mutate(
@@ -207,7 +208,7 @@ df1 <- data.frame(time= 10,
 
 
 df2 <- data.frame(time= 60,
-                  prop = c(7, 0.019, 0.0325), 
+                  prop = c(5.9, 0.016, 0.0325), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "strong lockdown") %>%
   mutate(
@@ -215,7 +216,7 @@ df2 <- data.frame(time= 60,
   )
 
 df3 <- data.frame(time= 120,
-                  prop = c(7, 0.019, 0.0325), 
+                  prop = c(5.9, 0.016, 0.0325), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "partial reopening") %>%
   mutate(
@@ -223,7 +224,7 @@ df3 <- data.frame(time= 120,
   )
 
 df4 <- data.frame(time= 165,
-                  prop = c(7, 0.019, 0.0325), 
+                  prop = c(5.9, 0.016, 0.0325), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "strong lockdown") %>%
   mutate(
@@ -231,7 +232,7 @@ df4 <- data.frame(time= 165,
   )
 
 df5 <- data.frame(time= 195,
-                  prop = c(7, 0.019, 0.0325), 
+                  prop = c(5.9, 0.016, 0.0325), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "partial reopening") %>%
   mutate(
@@ -239,7 +240,7 @@ df5 <- data.frame(time= 195,
   )
 
 df6 <- data.frame(time= 255,
-                  prop = c(7, 0.019, 0.0325), 
+                  prop = c(5.9, 0.016, 0.0325), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "all open, but still wearing mask") %>%
   mutate(
@@ -350,7 +351,7 @@ ggsave("figures/influenza/mild_age_meas.png",h=8,w=20)
 # ggsave("figures/influenza/mild_age_meas_mx.png",h=8,w=20)
 
 df1 <- data.frame(time= 15,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "no NPI") %>%
   mutate(
@@ -359,7 +360,7 @@ df1 <- data.frame(time= 15,
 
 
 df2 <- data.frame(time= 60,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "strong lockdown") %>%
   mutate(
@@ -367,7 +368,7 @@ df2 <- data.frame(time= 60,
   )
 
 df3 <- data.frame(time= 120,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "partial reopening") %>%
   mutate(
@@ -375,7 +376,7 @@ df3 <- data.frame(time= 120,
   )
 
 df4 <- data.frame(time= 165,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "strong lockdown") %>%
   mutate(
@@ -383,7 +384,7 @@ df4 <- data.frame(time= 165,
   )
 
 df5 <- data.frame(time= 195,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "partial reopening") %>%
   mutate(
@@ -391,7 +392,7 @@ df5 <- data.frame(time= 195,
   )
 
 df6 <- data.frame(time= 220,
-                  prop = c(3000, 150, 400), 
+                  prop = c(3000, 155, 400), 
                   fac=c("Infected","Hospitalisation","Deceased"),
                   text = "all open, but still wearing mask") %>%
   mutate(

@@ -32,17 +32,17 @@ colnames(contact_matrix) <- age_groups
 
 
 # Parameters mild
-
-R0_vec <- c(young = 1.5, adult = 1.8, elderly = 1.2)
+# 
+R0_vec <- c(young = 1.8, adult = 1.5, elderly = 1.2)
 CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
 p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
 p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
 
 # Parameters severe
-R0_vec <- c(young = 2.5, adult = 3, elderly = 3.5)
-CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
-p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
-p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
+# R0_vec <- c(young = 3.5, adult = 3, elderly = 2.5)
+# CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
+# p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
+# p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
 
 # for both
 incub_period <- 2
@@ -184,32 +184,7 @@ ggplot(dt, aes(x = time)) +
 
 ggsave("figures/influenza/mild_age.png",h=8,w=20)
 
-
-ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = mx, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Influenza - Mild Scenario - Rate",
-       x = "Days",
-       y = "Rate per 100'000")+
-  scale_color_manual("",
-                     breaks=c("young","adult","elderly"),
-                     labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/influenza/mild_age_mx.png",h=8,w=20)
-
-
+2E-05
 
 ggplot(dt, aes(x = time)) +
   geom_line(aes(y = prop, color = age), lwd=lwd_size) +
