@@ -184,7 +184,6 @@ ggplot(dt, aes(x = time)) +
 
 ggsave("figures/influenza/mild_age.png",h=8,w=20)
 
-
 ggplot(dt, aes(x = time)) +
   geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +

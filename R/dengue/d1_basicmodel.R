@@ -31,7 +31,7 @@ incub_period_m <- 15 # incubation mosquito
 # CFR <-  0.005  # cfr human
 # hmr <- 15 # human mosquito factor
 # p_hosp = 0.15    # Proportion hospitalized
-# p_die_hosp = 0.15   # Death in hospital
+# p_die_hosp = 0.1  # Death in hospital
 # incub_period_m <- 8 # incubation mosquito
 
 # for both
@@ -40,7 +40,7 @@ infection_period <- 5 # infection human
 Hr <-  7 # times in hospital
 mu_m = 1 / 14      # Mosquito death
 N_h <- 100000
-Tc <- 365   # yearly cycle (days)
+# Tc <- 365   # yearly cycle (days)
 
 
 # calculate from given assumptions
@@ -102,7 +102,7 @@ dengue_model <- function(t, state, parameters) {
 
 # Run simulation
 
-times <- seq(0, 365, by = 1)
+times <- seq(0, 300, by = 1)
 out <- ode(y = initial_state, times = times, func = dengue_model, parms = NULL)
 out_df <- as.data.frame(out)
 
