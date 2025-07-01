@@ -15,6 +15,8 @@ axis_text_size <- 22
 axis_title_size <- 22
 plot_title_size <- 22
 legend_text_size <- 25
+ann_text_size <- 5
+
 # Age groups
 age_groups <- c("young", "adult", "elderly")
 age_dist <- c(0.2, 0.6, 0.2)  # proportions of N_h
@@ -28,8 +30,8 @@ age_dist <- c(0.2, 0.6, 0.2)  # proportions of N_h
 # incub_period_m <- 15 # incubation mosquito
 # hmr <- 8 # human mosquito factor
 
-
 # Parameters sever
+# 
 beta_mh <- c(0.55, 0.5, 0.45)      # Mosquito -> Human
 beta_hm <- c(0.55, 0.5, 0.45)     # Human -> Mosquito
 CFR <-  c(0.002, 0.005, 0.008) #  cfr human
@@ -44,6 +46,7 @@ infection_period <- 5 # infection human
 Hr <-  7 # times in hospital
 mu_m = 1 / 14      # Mosquito death
 N_h <- 100000
+
 # Tc <- 365   # yearly cycle (days)
 
 N_age <- N_h * age_dist
@@ -71,6 +74,19 @@ initial_state <- c(
 )
 
 
+# Gradual behavioral/NPI effect
+get_intervention_factor <- function(time) {
+  if (time < 60) return(1.0)
+  else return(1 - 0.3* (1 - exp(-0.1 * (time - 60))))
+}
+
+# Gradual mosquito birth reduction (source reduction)
+get_mosquito_reduction_factor <- function(time) {
+  if (time < 60) return(1.0)
+  else return(1 - 0.3* (1 - exp(-0.1 * (time - 60))))
+}
+
+
 # Model
 dengue_model <- function(t, state, parameters) {
   with(as.list(state), {
@@ -83,8 +99,10 @@ dengue_model <- function(t, state, parameters) {
     # lambda_m <- beta_hm * I_h_total / N_h_total
     
     # Human dynamics per age group
+    beta_mh_eff <- beta_mh * get_intervention_factor(t)
+    beta_hm_eff <- beta_hm * get_intervention_factor(t)
     
-    lambda_h1 <- beta_mh[1] * I_m / N_m
+    lambda_h1 <-beta_mh_eff[1] * I_m / N_m
     dS_h_1 <- -lambda_h1 * S_h_1
     dE_h_1 <- lambda_h1 * S_h_1 - sigma_h * E_h_1
     dI_h_1 <- sigma_h * E_h_1 - gamma_h * I_h_1
@@ -92,7 +110,7 @@ dengue_model <- function(t, state, parameters) {
     dR_h_1 <- (1 - p_hosp[1]) * gamma_h * I_h_1 + rho[1] * H_h_1
     dD_h_1 <- CFR[1] * gamma_h * I_h_1 + mu_hosp[1] * H_h_1
     
-    lambda_h2 <- beta_mh[2] * I_m / N_m
+    lambda_h2 <- beta_mh_eff[2] * I_m / N_m
     dS_h_2 <- -lambda_h2 * S_h_2
     dE_h_2 <- lambda_h2 * S_h_2 - sigma_h * E_h_2
     dI_h_2 <- sigma_h * E_h_2 - gamma_h * I_h_2
@@ -100,7 +118,7 @@ dengue_model <- function(t, state, parameters) {
     dR_h_2 <- (1 - p_hosp[2]) * gamma_h * I_h_2 + rho[2] * H_h_2
     dD_h_2 <- CFR[2] * gamma_h * I_h_2 + mu_hosp[2] * H_h_2
     
-    lambda_h3 <- beta_mh[3] * I_m / N_m
+    lambda_h3 <- beta_mh_eff[3] * I_m / N_m
     dS_h_3 <- -lambda_h3 * S_h_3
     dE_h_3 <- lambda_h3 * S_h_3 - sigma_h * E_h_3
     dI_h_3 <- sigma_h * E_h_3 - gamma_h * I_h_3
@@ -110,16 +128,23 @@ dengue_model <- function(t, state, parameters) {
     
     # Mosquito dynamics
     # Calculate force of infection for mosquitoes:
-    lambda_m <- (beta_hm[1] * I_h_1 + beta_hm[2] * I_h_2 + beta_hm[3] * I_h_3) / N_h_total
+    lambda_m <- ( beta_hm_eff[1] * I_h_1 +  beta_hm_eff[2] * I_h_2 +  beta_hm_eff[3] * I_h_3) / N_h_total
     
     # Mosquito dynamics
     total_mosquitoes <- S_m + E_m + I_m
-    birth_rate <- mu_m * total_mosquitoes
+    birth_rate <- mu_m * total_mosquitoes* get_mosquito_reduction_factor(t)
+    # birth_rate <- mu_m * total_mosquitoes* get_mosquito_reduction_factor(t)
     
     dS_m <- birth_rate - lambda_m * S_m - mu_m * S_m
     dE_m <- lambda_m * S_m - sigma_m * E_m - mu_m * E_m
     dI_m <- sigma_m * E_m - mu_m * I_m
     
+    # 40% of the mosquitos are directly killed by thermal fogging
+    if (abs(t - 60) < 0.5) {
+      dS_m <- dS_m - 0.4 * S_m
+      dE_m <- dE_m - 0.4 * E_m
+      dI_m <- dI_m - 0.4 * I_m
+    }
     
     list(c(
       dS_h_1, dE_h_1, dI_h_1, dH_h_1, dR_h_1, dD_h_1,
@@ -137,46 +162,116 @@ times <- seq(0, 400, by = 1)
 out <- ode(y = initial_state, times = times, func = dengue_model, parms = NULL)
 out_df <- as.data.frame(out)
 
-dt_h <- out_df[, c(1,grep("_h_", names(out_df)))] 
+dt_h <- out_df[, c(1,grep("_m", names(out_df)))] 
 
-dt_hd <- dt_h[, c(1,grep("D_", names(dt_h)))] %>%
-  gather(., comp, prop,2:4) 
+dt_hd <- dt_h[, c(1,grep("S_", names(dt_h)))] %>%
+  mutate(fac="S") %>%
+  rename(prop = S_m)
 
 dt_hi <- dt_h[, c(1,grep("I_", names(dt_h)))] %>%
-  gather(., comp, prop,2:4) 
+  mutate(fac="I") %>%
+  rename(prop = I_m)
 
-dt_hh <- dt_h[, c(1,grep("H_", names(dt_h)))] %>%
-  gather(., comp, prop,2:4) 
+dt_hh <- dt_h[, c(1,grep("E_", names(dt_h)))] %>%
+  mutate(fac="E")%>%
+  rename(prop = E_m)
 
 
 dt <- rbind(dt_hd, dt_hh, dt_hi) %>%
-  
   mutate(
-    age = str_sub(comp, 5)
-  ) %>%
-  left_join(dt_pop) %>%
+    fac = case_when(fac == "S" ~ "Susceptible",
+                           fac == "E" ~ "Exposed",
+                           fac == "I" ~ "Infected"),
+    fac  = factor(fac , levels=c("Susceptible", "Exposed","Infected"))
+  )
+
+# df1 <- data.frame(time= 10,
+#                   prop = c(300000,1.2, 0.7), 
+#                   fac=c("Susceptible", "Exposed","Infected"),
+#                   text = "no NPI") %>%
+#   mutate(
+#     fac  = factor(fac , levels=c("Susceptible", "Exposed","Infected"))
+#   )
+# 
+# 
+# df2 <- data.frame(time= 250,
+#                   prop = c(300000,1.2, 0.7), 
+#                   fac=c("Susceptible", "Exposed","Infected"),
+#                   text = "integrated vector management") %>%
+#   mutate(
+#     fac  = factor(fac , levels=c("Susceptible", "Exposed","Infected"))
+#   )
+
+# 
+# ggplot(dt, aes(x = time)) +
+#   facet_wrap(~fac, ncol=3, scales = "free_y") +
+#   annotate("rect",xmin=0,xmax=40,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+#   geom_text(data = df1,
+#             aes(x=time, y=prop,label = text),
+#             angle = 90,
+#             size=ann_text_size) +
+#   annotate("rect",xmin=40,xmax=Inf,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey40") +
+#   geom_text(data = df2,
+#             aes(x=time, y=prop,label = text),
+#             angle = 90,
+#             size=ann_text_size) +
+#   geom_line(aes(y = prop, color = fac), lwd=lwd_size) +
+#   labs(title = "Dengue - Mild Scenario",
+#        x = "Days",
+#        y = "Individuals")+
+#   scale_color_manual("",
+#                      # breaks=c("young","adult","elderly"),
+#                      # labels=c("0-18","19-64",">=65"),
+#                      values = col_a) +
+#   # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
+#   theme_bw() +
+#   theme(
+#     strip.text = element_text(size=size_plot),
+#     axis.text = element_text(size=axis_text_size),
+#     axis.title  = element_text(size=axis_title_size),
+#     legend.position = "bottom",
+#     legend.text=element_text(size=legend_text_size),
+#     plot.title = element_text(size=plot_title_size),
+#     panel.grid.minor.x = element_blank(),
+#     panel.grid.minor.y = element_blank())
+# 
+# ggsave("figures/dengue/mild_age_meas40_M.png",h=10,w=20)
+
+
+df1 <- data.frame(time= 30,
+                  prop = c(500000,1000, 1800), 
+                  fac=c("Susceptible", "Exposed","Infected"),
+                  text = "no NPI") %>%
   mutate(
-    age = as.factor(age),
-    age = case_when(age == "1" ~ "0-18",
-                    age == "2" ~ "19-64",
-                    age == "3" ~ ">=65"),
-    age  = factor(age , levels=c("0-18","19-64",">=65")),
-    fac = str_sub(comp,1, 1),
-    fac = as.factor(fac),
-    fac = case_when(fac == "D" ~ "Deceased",
-                    fac == "I" ~ "Infected",
-                    fac == "H" ~ "Hospitalisation"),
-    fac  = factor(fac , levels=c("Infected","Hospitalisation","Deceased")),
-    mx = prop/pop *100000
+    fac  = factor(fac , levels=c("Susceptible","Exposed","Infected"))
+  )
+
+
+df2 <- data.frame(time= 250,
+                  prop = c(500000,1000, 1800), 
+                  fac=c("Susceptible", "Exposed","Infected"),
+                  text = "integrated vector management") %>%
+  mutate(
+    fac  = factor(fac , levels=c("Susceptible","Exposed","Infected"))
   )
 
 
 ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Dengue - Mild Scenario",
+  annotate("rect",xmin=0,xmax=60,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey90") +
+  geom_text(data = df1,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  annotate("rect",xmin=60,xmax=Inf,ymin=-Inf,ymax=Inf,alpha=0.2,fill="grey40") +
+  geom_text(data = df2,
+            aes(x=time, y=prop,label = text),
+            angle = 90,
+            size=ann_text_size) +
+  geom_line(aes(y = prop, color = fac), lwd=lwd_size) +
+  labs(title = "Dengue - Severe Scenario - 60 days",
        x = "Days",
-       y = "Individuals")+
+       y = "Mosquitoes")+
   scale_color_manual("",
                      # breaks=c("young","adult","elderly"),
                      # labels=c("0-18","19-64",">=65"),
@@ -193,82 +288,5 @@ ggplot(dt, aes(x = time)) +
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank())
 
-ggsave("figures/dengue/mild_age.png",h=8,w=20)
+ggsave("figures/dengue/severe_age_meas60_M.png",h=8,w=20)
 
-
-
-ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = mx, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Dengue - Mild Scenario - Rate",
-       x = "Days",
-       y = "Rate per 100'000")+
-  scale_color_manual("",
-                     # breaks=c("young","adult","elderly"),
-                     # labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/dengue/mild_age_mx.png",h=8,w=20)
-
-
-
-ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = prop, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Dengue - Severe Scenario",
-       x = "Days",
-       y = "Individuals")+
-  scale_color_manual("",
-                     # breaks=c("young","adult","elderly"),
-                     # labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/dengue/severe_age.png",h=8,w=20)
-
-
-
-ggplot(dt, aes(x = time)) +
-  geom_line(aes(y = mx, color = age), lwd=lwd_size) +
-  facet_wrap(~fac, ncol=3, scales = "free_y") +
-  labs(title = "Dengue - Severe Scenario - Rate",
-       x = "Days",
-       y = "Rate per 100'000")+
-  scale_color_manual("",
-                     # breaks=c("young","adult","elderly"),
-                     # labels=c("0-18","19-64",">=65"),
-                     values = col_a) +
-  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
-  theme_bw() +
-  theme(
-    strip.text = element_text(size=size_plot),
-    axis.text = element_text(size=axis_text_size),
-    axis.title  = element_text(size=axis_title_size),
-    legend.position = "bottom",
-    legend.text=element_text(size=legend_text_size),
-    plot.title = element_text(size=plot_title_size),
-    panel.grid.minor.x = element_blank(),
-    panel.grid.minor.y = element_blank())
-
-ggsave("figures/dengue/severe_age_mx.png",h=8,w=20)

@@ -122,7 +122,7 @@ seird_model_age <- function(time, state, parameters) {
       dE <-  beta * S * lambda[i] - sigma * E
       dI <-  sigma * E - gamma * I
       dH <- p_hosp * gamma * I - (rho + mu) * H
-      dR <- (1 - p_hosp - CFR) * gamma * I + rho * H + vac
+      dR <- (1 - p_hosp) * gamma * I + rho * H + vac
       dD <- CFR * gamma * I + mu * H
       
       d_state[paste0("S_", age)] <- dS

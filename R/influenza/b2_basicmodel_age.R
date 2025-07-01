@@ -106,7 +106,7 @@ seird_model_age <- function(time, state, parameters) {
       dE <-  beta * S * lambda[i] - sigma * E
       dI <-  sigma * E - gamma * I
       dH <- p_hosp * gamma * I - (rho + mu) * H
-      dR <- (1 - p_hosp - CFR) * gamma * I + rho * H
+      dR <- (1 - p_hosp) * gamma * I + rho * H
       dD <- CFR * gamma * I + mu * H
       
       
@@ -184,6 +184,31 @@ ggplot(dt, aes(x = time)) +
 
 ggsave("figures/influenza/mild_age.png",h=8,w=20)
 
+
+ggplot(dt, aes(x = time)) +
+  geom_line(aes(y = prop, color = age), lwd=lwd_size) +
+  facet_wrap(~fac, ncol=3, scales = "free_y") +
+  labs(title = "Influenza - Mild Scenario - Individuals",
+       x = "Days",
+       y = "Individuals")+
+  scale_color_manual("",
+                     breaks=c("young","adult","elderly"),
+                     labels=c("0-18","19-64",">=65"),
+                     values = col_a) +
+  # scale_y_continuous(breaks = seq(0, 100000, by = 10000)) +
+  theme_bw() +
+  theme(
+    strip.text = element_text(size=size_plot),
+    axis.text = element_text(size=axis_text_size),
+    axis.title  = element_text(size=axis_title_size),
+    legend.position = "bottom",
+    legend.text=element_text(size=legend_text_size),
+    plot.title = element_text(size=plot_title_size),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.minor.y = element_blank())
+
+ggsave("figures/influenza/mild_age_mx.png",h=8,w=20)
+
 ggplot(dt, aes(x = time)) +
   geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +
@@ -206,7 +231,7 @@ ggplot(dt, aes(x = time)) +
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank())
 
-ggsave("figures/influenza/severe_age.png",h=8,w=20)
+ggsave("figures/influenza/severe_age2.png",h=8,w=20)
 
 
 ggplot(dt, aes(x = time)) +

@@ -59,7 +59,7 @@ seirhd_model <- function(time, state, parameters) {
     dE <-  beta * S * I / N - sigma * E
     dI <-  sigma * E - gamma * I
     dH <-  p_hosp * gamma * I - (rho + mu) * H
-    dR <-  (1 - p_hosp - CFR) * gamma * I + rho * H
+    dR <-  (1 - p_hosp) * gamma * I + rho * H
     dD <-  CFR * gamma * I + mu * H
     
     list(c(dS, dE, dI, dH, dR, dD))

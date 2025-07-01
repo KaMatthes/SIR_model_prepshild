@@ -17,13 +17,13 @@ legend_text_size <- 30
 
 
 # Parameters mild
-beta_mh <- 0.3      # Mosquito -> Human
-beta_hm <- 0.3     # Human -> Mosquito
-CFR <-  0.00001 # cfr human
-hmr <- 8 # human mosquito factor
-p_hosp = 0.01     # Proportion hospitalized
-p_die_hosp = 0.01   # Death in hospital
-incub_period_m <- 15 # incubation mosquito
+# beta_mh <- 0.3      # Mosquito -> Human
+# beta_hm <- 0.3     # Human -> Mosquito
+# CFR <-  0.00001 # cfr human
+# hmr <- 8 # human mosquito factor
+# p_hosp = 0.01     # Proportion hospitalized
+# p_die_hosp = 0.01   # Death in hospital
+# incub_period_m <- 15 # incubation mosquito
 
 # Parameters sever
 # beta_mh <- 0.5      # Mosquito -> Human
@@ -102,7 +102,7 @@ dengue_model <- function(t, state, parameters) {
 
 # Run simulation
 
-times <- seq(0, 300, by = 1)
+times <- seq(0, 400, by = 1)
 out <- ode(y = initial_state, times = times, func = dengue_model, parms = NULL)
 out_df <- as.data.frame(out)
 
