@@ -33,16 +33,16 @@ colnames(contact_matrix) <- age_groups
 
 # Parameters mild
 # 
-R0_vec <- c(young = 1.8, adult = 1.5, elderly = 1.2)
-CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
-p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
-p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
+# R0_vec <- c(young = 1.8, adult = 1.5, elderly = 1.2)
+# CFR_vec <- c(young = 0.00002, adult = 0.0002, elderly = 0.005)
+# p_hosp_vec <- c(young = 0.001, adult = 0.002, elderly = 0.004)
+# p_die_hosp_vec <- c(young = 0.002, adult = 0.15, elderly = 0.3)
 
 # Parameters severe
-# R0_vec <- c(young = 3.5, adult = 3, elderly = 2.5)
-# CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
-# p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
-# p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
+R0_vec <- c(young = 3.5, adult = 3, elderly = 2.5)
+CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
+p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
+p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5)
 
 # for both
 incub_period <- 2
@@ -131,11 +131,22 @@ out_df <- as.data.frame(out)
 dt_d <- out_df[, c(1,grep("D_", names(out_df)))] %>%
   gather(., comp, prop,2:4) 
 
+dt_d1 <- dt_d %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
+
+
 dt_i <- out_df[, c(1,grep("I_", names(out_df)))] %>%
   gather(., comp, prop,2:4) 
 
+dt_di <- dt_i %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
+
+
 dt_h <- out_df[, c(1,grep("H_", names(out_df)))] %>%
-  gather(., comp, prop,2:4) 
+  gather(., comp, prop,2:4)
+
+dt_dh <- dt_h %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
 
 dt_pop <- data.frame(N_age) %>%
   mutate(

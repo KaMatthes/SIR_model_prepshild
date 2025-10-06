@@ -145,11 +145,22 @@ out_df <- as.data.frame(out)
 dt_d <- out_df[, c(1,grep("D_", names(out_df)))] %>%
   gather(., comp, prop,2:4) 
 
+dt_d1 <- dt_d %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
+
 dt_i <- out_df[, c(1,grep("I_", names(out_df)))] %>%
   gather(., comp, prop,2:4) 
 
+dt_i1 <- dt_i %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
+
+
 dt_h <- out_df[, c(1,grep("H_", names(out_df)))] %>%
   gather(., comp, prop,2:4) 
+
+dt_h1 <- dt_h %>%
+  filter(time %in% c(30,90,120,150,160,200,250))
+
 
 dt_pop <- data.frame(N_age) %>%
   mutate(
