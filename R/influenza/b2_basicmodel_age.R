@@ -171,6 +171,14 @@ dt <- rbind(dt_d, dt_h, dt_i) %>%
     mx = prop/pop *100000
   )
 
+# dts <- dt %>%
+#   select(Zeitpunkt = time, Ater=age, Pop=pop, Event=fac, Absolut=mx, Relativ=prop) %>%
+#   mutate(Absolut= round(Absolut),
+#          Relativ = round(Relativ))
+# 
+# write.xlsx(dts,"Numbers_keine_Massnahmen.xlsx")
+
+
 ggplot(dt, aes(x = time)) +
   geom_line(aes(y = prop, color = age), lwd=lwd_size) +
   facet_wrap(~fac, ncol=3, scales = "free_y") +
