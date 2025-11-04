@@ -171,12 +171,12 @@ dt <- rbind(dt_d, dt_h, dt_i) %>%
     mx = prop/pop *100000
   )
 
-# dts <- dt %>%
-#   select(Zeitpunkt = time, Ater=age, Pop=pop, Event=fac, Absolut=mx, Relativ=prop) %>%
-#   mutate(Absolut= round(Absolut),
-#          Relativ = round(Relativ))
-# 
-# write.xlsx(dts,"Numbers_keine_Massnahmen.xlsx")
+dts <- dt %>%
+  select(Zeitpunkt = time, Ater=age, Pop=pop, Event=fac, Absolut=prop, Relativ=mx) %>%
+  mutate(Absolut= round(Absolut),
+         Relativ = round(Relativ))
+
+write.xlsx(dts,"Numbers_keine_Massnahmen.xlsx")
 
 
 ggplot(dt, aes(x = time)) +
