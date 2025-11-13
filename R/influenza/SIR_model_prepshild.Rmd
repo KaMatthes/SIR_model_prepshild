@@ -12,7 +12,7 @@ output:
 
 ```{r, echo=FALSE,message=FALSE, warning=FALSE}
 
-# app.R - SEIR with direct split to ICU (20% of hospitalisations) and ICU stay = 10 days
+# packages
 library(shiny)
 library(deSolve)
 library(tidyverse)
@@ -36,7 +36,14 @@ ui <- fluidPage(useShinyjs(), theme = shinytheme("flatly"), withMathJax(),
                                         h2("Population (per age group)"),
                                         numericInput("N_young", "0-19", 20000),
                                         numericInput("N_adult", "20-64", 60000),
-                                        numericInput("N_elderly", "65+", 20000)
+                                        numericInput("N_elderly", "65+", 20000),
+                                        
+                                        h2("Parameter Hospital"),
+                                        numericInput("Hosp_day", "Hospital days", 5),
+                                        numericInput("ICU_day", "ICU days", 10),
+                                        numericInput("ICU_prop", "ICU percentage", 15),
+                    
+                                         
                                  ),
                                  column(3,
                                         h2("Intervention periods (days)"),
@@ -44,9 +51,9 @@ ui <- fluidPage(useShinyjs(), theme = shinytheme("flatly"), withMathJax(),
                                         numericInput("period2", "Period 2", 50),
                                         numericInput("period3", "Period 3", 100),
                                         h2("Intervention reduction factors"),
-                                        numericInput("int1", "Period 1 reduction", 0.2),
-                                        numericInput("int2", "Period 2 reduction", 0.5),
-                                        numericInput("int3", "Period 3 reduction", 0.7)
+                                        numericInput("int1", "Period 1", 0.2),
+                                        numericInput("int2", "Period 2", 0.5),
+                                        numericInput("int3", "Period 3", 0.7)
                                  ),
                                  column(3,
                                         h2("Vaccination periods (days)"),
@@ -55,18 +62,18 @@ ui <- fluidPage(useShinyjs(), theme = shinytheme("flatly"), withMathJax(),
                                         numericInput("pervac3", "Period 3", 200)
                                  ),
                                  column(3,
-                                        h2("Vaccination rates (daily) Young"),
-                                        numericInput("vacc_young1", "Young 0-19, Period 1", 0),
-                                        numericInput("vacc_young2", "Young 0-19, Period 2", 0),
-                                        numericInput("vacc_young3", "Young 0-19, Period 3", 0),
-                                        h2("Vaccination rates (daily) Adult"),
-                                        numericInput("vacc_adult1", "Adult 20-64, Period 1", 0),
-                                        numericInput("vacc_adult2", "Adult 20-64, Period 2", 0),
-                                        numericInput("vacc_adult3", "Adult 20-64, Period 3", 0),
-                                        h2("Vaccination rates (daily) Elderly"),
-                                        numericInput("vacc_elderly1", "Elderly 65+, Period 1", 0),
-                                        numericInput("vacc_elderly2", "Elderly 65+, Period 2", 0),
-                                        numericInput("vacc_elderly3", "Elderly 65+, Period 3", 0),
+                                        h2("Vaccination rates (daily) 0-19 Young"),
+                                        numericInput("vacc_young1", "Period 1", 0),
+                                        numericInput("vacc_young2", "Period 2", 0),
+                                        numericInput("vacc_young3", "Period 3", 0),
+                                        h2("Vaccination rates (daily) 20-64 Adult"),
+                                        numericInput("vacc_adult1", "Period 1", 0),
+                                        numericInput("vacc_adult2", "Period 2", 0),
+                                        numericInput("vacc_adult3", "Period 3", 0),
+                                        h2("Vaccination rates (daily) 65 + Elderly"),
+                                        numericInput("vacc_elderly1", "Period 1", 0),
+                                        numericInput("vacc_elderly2", "Period 2", 0),
+                                        numericInput("vacc_elderly3", "Period 3", 0),
                                         actionButton("run", "Run Simulation")
                                  )
                                )
@@ -96,12 +103,14 @@ server <- function(input, output) {
     R0_vec <- c(young = 2.5, adult = 3, elderly = 3.5)
     CFR_vec <- c(young = 0.0001, adult = 0.0003, elderly = 0.02)
     p_hosp_vec <- c(young = 0.01, adult = 0.03, elderly = 0.05)
-    p_die_hosp_vec <- c(young = 0.02, adult = 0.25, elderly = 0.5) # fraction of hospitalized who die (overall)
+    p_die_hosp_vec <- c(young = 0.02, adult = 0.06, elderly = 0.15) # fraction of hospitalized who die 
+    p_die_icu_vec <- c(young = 0.10, adult = 0.25, elderly = 0.5) # fraction of hospitalized who die
     sigma <- 1/2
     gamma <- 1/5
-    Ht <- 5    # avg non-ICU hospital stay (days)
-    Ct <- 10   # avg ICU stay (days)
-    p_icu <- 0.15  # fraction of hospitalized who go to ICU (at admission)
+    # Ht <- 5    # avg non-ICU hospital stay (days)
+    # Ct <- 10   # avg ICU stay (days)
+    # p_icu <- 0.15  # fraction of hospitalized who go to ICU (at admission)
+    # 
     
     N_age <- c(young=input$N_young, adult=input$N_adult, elderly=input$N_elderly)
     beta_vec <- R0_vec * gamma / rowSums(contact_matrix)
@@ -152,39 +161,36 @@ server <- function(input, output) {
           beta <- beta_vec[age]
           p_hosp <- p_hosp_vec[age]
           p_die_hosp <- p_die_hosp_vec[age]
+          p_die_icu <- p_die_icu_vec[age]
           
           vac <- min(S, vac_rates[age])
-          
-      
-          # Outflow rates (per day) from compartments (simple exponential durations)
-          # Non-ICU hospital: total outflow rate = 1/Ht
-          # ICU: total outflow rate = 1/Ct
-          out_h_rate <- 1 / Ht
-          out_c_rate <- 1 / Ct
-          
-          # Split outflows into recover / death using p_die_hosp attribution:
-          # assume fraction p_die_hosp of ALL hospitalized (non-ICU + ICU) die.
-          # allocate deaths proportionally to where people are (by the inflow fraction).
-          # Thus deaths from non-ICU = p_die_hosp * (1 - p_icu) / Ht * H
-          # and deaths from ICU = p_die_hosp * p_icu / Ct * C
-          # mu_h <- (p_die_hosp * (1 - p_icu)) / Ht
-          # rho_h <- ((1 - p_die_hosp) * (1 - p_icu)) / Ht
+    
+    
           # 
-          mu_h <- p_die_hosp / Ht
-          rho_h <- (1 - p_die_hosp) / Ht
+          mu_h <- p_die_hosp / input$Hosp_day
+          rho_h <- (1 - p_die_hosp) / input$Hosp_day
+
+          mu_c <- p_die_icu  / input$ICU_day
+          rho_c <- (1 - p_die_icu)/ input$ICU_day
           
-          mu_c <- (p_die_hosp * p_icu) / Ct
-          rho_c <- ((1 - p_die_hosp) * p_icu) / Ct
+          p_icu <- input$ICU_prop/100
+          p_icu_safe <- ifelse(p_icu >= 1, 0.9999, p_icu)
+          phi <- p_icu_safe / (1 - p_icu_safe) * (rho_h + mu_h)
           
+          # phi <- p_icu / (1 - p_icu) * (rho_h + mu_h) 
+          #     
           # ODEs
           dS <- -beta * S * lambda[i] - vac
           dE <-  beta * S * lambda[i] - sigma * E
           dI <-  sigma * E - gamma * I
+          # dH <- p_hosp * gamma * I - (rho_h + mu_h) * H
+          # dC <- p_icu * p_hosp * gamma * I -  (rho_c + mu_c)* C
           
-          # Hospital (non-ICU) and ICU dynamics with direct inflow split
-          # dH <- inflow_h_nonicu - out_h_rate * H  # outflow broken into mu_h and rho_h later for D/R totals
-          dH <- p_hosp * gamma * I - (rho_h + mu_h) * H
-          dC <- p_icu * p_hosp * gamma * I - out_c_rate * C
+          dH <- p_hosp * gamma * I - (rho_h + mu_h + phi) * H  # all hospitalizations
+          dC <- phi * H - (rho_c + mu_c) * C                         # ICU subset of H
+
+# phi = rate at which H patients are transferred to ICU to achieve exactly p_icu fraction
+
           
           # Recovered and Deaths: accumulate from compartment outflows and vaccination
           dR <- (1 - p_hosp) * gamma * I + rho_h * H + rho_c * C + vac
@@ -209,8 +215,13 @@ server <- function(input, output) {
     dt_d <- out[, c(1, grep("^D_", names(out)))] %>% gather(., comp, prop, -time)
     dt_i <- out[, c(1, grep("^I_", names(out)))] %>% gather(., comp, prop, -time)
     dt_h <- out[, c(1, grep("^H_", names(out)))] %>% gather(., comp, prop, -time)
+    dt_hv <- dt_h$prop
     dt_c <- out[, c(1, grep("^C_", names(out)))] %>% gather(., comp, prop, -time)
-    
+    dt_cv <- dt_c$prop
+    dt_htv <- dt_h$prop + dt_c$prop
+    dt_h <- dt_h %>%
+      select(time,comp) %>%
+      mutate(prop = dt_htv )
     dt_pop <- data.frame(N_age) %>% mutate(age = row.names(.)) %>% rename(pop = N_age)
     
     dt <- bind_rows(dt_d, dt_h, dt_i, dt_c) %>%
