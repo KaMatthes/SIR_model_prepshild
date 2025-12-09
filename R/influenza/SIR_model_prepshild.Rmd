@@ -134,9 +134,9 @@ server <- function(input, output) {
     v3 <- as.integer(c(input$vacc_young3,input$vacc_adult3,input$vacc_elderly3))
     
     get_vaccination_rate <- function(time) {
-      if (time >= input$period1 & time < input$period2) c(young=v1[1], adult=v1[2], elderly=v1[3])
-      else if (time >= input$period2 & time < input$period3) c(young=v2[1], adult=v2[2], elderly=v2[3])
-      else if (time >= input$period3) c(young=v3[1], adult=v3[2], elderly=v3[3])
+      if (time >= input$pervac1 & time < input$pervac2) c(young=v1[1], adult=v1[2], elderly=v1[3])
+      else if (time >= input$pervac2 & time < input$pervac3) c(young=v2[1], adult=v2[2], elderly=v2[3])
+      else if (time >= input$pervac3) c(young=v3[1], adult=v3[2], elderly=v3[3])
       else c(young=0, adult=0, elderly=0)
     }
     

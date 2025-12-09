@@ -52,7 +52,7 @@ N_age <- c(young = 20001, adult = 60000, elderly = 20000)
 
 # Beta values per age group
 contact_row_sums <- rowSums(contact_matrix)
-beta_vec <- R0_vec * gamma / contact_row_sums
+beta_vec <- R0_vec * gamma / contact_row_sums 
 
 # Initial state
 init_state <- c(
